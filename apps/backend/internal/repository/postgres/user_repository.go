@@ -40,7 +40,7 @@ func (r *userRepository) Save(user *domain.User) (*domain.User, error) {
 
 func (r *userRepository) GetByID(id int64) (*domain.User, error) {
 	query := `
-		SELECT id, namem, email
+		SELECT id, name, email
 		FROM users
 		WHERE id = $1
 	`
