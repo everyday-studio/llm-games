@@ -23,8 +23,17 @@ func main() {
 	if err != nil {
 		log.Fatalf("Config load error: %v", err)
 	}
-
 	fmt.Printf("config: %+v\n", cfg)
+
+	//DB
+	/*
+		dbConn, err := db.NewDBConnection(cfg)
+		if err != nil {
+			log.Fatalf("DB connection error: %v", err)
+		}
+	*/
+
+	//Server
 	e := echo.New()
 
 	log.Printf("Server started at %s", fmt.Sprintf(":%d", cfg.App.Port))
