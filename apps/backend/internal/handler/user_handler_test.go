@@ -65,7 +65,7 @@ func TestCreateUser(t *testing.T) {
 		expectedStatus int
 	}{
 		{
-			name:           "Success",
+			name:           "Creates user successfully",
 			input:          `{"name":"John","email":"john@example.com"}`,
 			mockInput:      &domain.User{Name: "John", Email: "john@example.com"},
 			mockReturn:     &domain.User{Name: "John", Email: "john@example.com"},
@@ -73,7 +73,7 @@ func TestCreateUser(t *testing.T) {
 			expectedStatus: http.StatusCreated,
 		},
 		{
-			name:           "InvalidInput",
+			name:           "Fails to create user due to invalid email",
 			input:          `{"name":"","email":""}`,
 			mockInput:      &domain.User{Name: "", Email: ""},
 			mockReturn:     nil,
@@ -81,7 +81,7 @@ func TestCreateUser(t *testing.T) {
 			expectedStatus: http.StatusBadRequest,
 		},
 		{
-			name:           "AlreadyExists",
+			name:           "Fails to create user due to existing email",
 			input:          `{"name":"John","email":"john@example.com"}`,
 			mockInput:      &domain.User{Name: "John", Email: "john@example.com"},
 			mockReturn:     nil,
@@ -121,7 +121,7 @@ func TestGetByID(t *testing.T) {
 		expectedBody   string
 	}{
 		{
-			name:           "Get user by ID successfully",
+			name:           "Get users by id successfully",
 			pathParam:      "1",
 			mockReturn:     &domain.User{ID: 1, Name: "John", Email: "john@example.com"},
 			mockError:      nil,
@@ -129,7 +129,7 @@ func TestGetByID(t *testing.T) {
 			expectedBody:   `{"id":1,"name":"John","email":"john@example.com"}`,
 		},
 		{
-			name:           "User not found",
+			name:           "Fails to find user",
 			pathParam:      "1",
 			mockReturn:     nil,
 			mockError:      domain.ErrNotFound,
@@ -137,7 +137,7 @@ func TestGetByID(t *testing.T) {
 			expectedBody:   fmt.Sprintf(`{"error":"%s"}`, domain.ErrNotFound.Error()),
 		},
 		{
-			name:           "Invalid ID format",
+			name:           "Fails to find user due to invalid id",
 			pathParam:      "invalid",
 			mockReturn:     nil,
 			mockError:      domain.ErrInvalidInput,
@@ -190,7 +190,7 @@ func TestGetAll(t *testing.T) {
 			expectedBody:   `[{"id":1,"name":"John","email":"john@example.com"},{"id":2,"name":"Jane","email":"jane@example.com"}]`,
 		},
 		{
-			name:           "No users found",
+			name:           "Fails to find any users",
 			mockReturn:     nil,
 			mockError:      domain.ErrNotFound,
 			expectedStatus: http.StatusNotFound,

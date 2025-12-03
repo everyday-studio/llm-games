@@ -19,7 +19,7 @@ func TestCreateUser(t *testing.T) {
 		expectErr  error
 	}{
 		{
-			name:       "Success",
+			name:       "Create user successfully",
 			mockInput:  &domain.User{Name: "John", Email: "john@example.com"},
 			mockReturn: &domain.User{Name: "John", Email: "john@example.com"},
 			mockError:  nil,
@@ -27,14 +27,14 @@ func TestCreateUser(t *testing.T) {
 			expectErr:  nil,
 		},
 		{
-			name:      "InvalidInput",
+			name:      "Failed to create user due to invalid input",
 			mockInput: &domain.User{Name: "", Email: ""},
 			mockError: domain.ErrInvalidInput,
 			expected:  nil,
 			expectErr: domain.ErrInvalidInput,
 		},
 		{
-			name:      "AlreadyExists",
+			name:      "Failed to create use due to existing email",
 			mockInput: &domain.User{Name: "John", Email: "john@example.com"},
 			mockError: domain.ErrAlreadyExists,
 			expected:  nil,
@@ -68,7 +68,7 @@ func TestGetByID(t *testing.T) {
 		expectErr  error
 	}{
 		{
-			name:       "User Found",
+			name:       "Find user successfully",
 			inputID:    1,
 			mockReturn: &domain.User{ID: 1, Name: "John", Email: "john@example.com"},
 			mockError:  nil,
@@ -76,7 +76,7 @@ func TestGetByID(t *testing.T) {
 			expectErr:  nil,
 		},
 		{
-			name:      "User Not Found",
+			name:      "Fails to find user",
 			inputID:   2,
 			mockError: domain.ErrNotFound,
 			expected:  nil,
@@ -109,7 +109,7 @@ func TestGetAll(t *testing.T) {
 		expectErr  error
 	}{
 		{
-			name: "Users Found",
+			name: "Find user successfully",
 			mockReturn: []domain.User{
 				{ID: 1, Name: "John", Email: "john@example.com"},
 				{ID: 2, Name: "Jane", Email: "jane@example.com"},
@@ -122,7 +122,7 @@ func TestGetAll(t *testing.T) {
 			expectErr: nil,
 		},
 		{
-			name:      "No Users Found",
+			name:      "Failed to find any users",
 			mockError: domain.ErrNotFound,
 			expected:  nil,
 			expectErr: domain.ErrNotFound,

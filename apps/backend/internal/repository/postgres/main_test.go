@@ -25,7 +25,7 @@ func TestMain(m *testing.M) {
 	)
 	container, testDB, err = setupPostgresContainer(ctx)
 	if err != nil {
-		log.Fatalf("PostgreSQL 컨테이너 설정 실패: %v", err)
+		log.Fatalf("Failed to setup postgres container: %v", err)
 	}
 
 	setupSchema()
