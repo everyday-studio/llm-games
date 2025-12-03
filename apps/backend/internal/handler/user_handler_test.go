@@ -67,8 +67,8 @@ func TestCreateUser(t *testing.T) {
 		{
 			name:           "Success",
 			input:          `{"name":"John","email":"john@example.com"}`,
-			mockInput:      &domain.User{Name: "John", Email: "john@exmaple.com"},
-			mockReturn:     &domain.User{Name: "John", Email: "john@exmaple.com"},
+			mockInput:      &domain.User{Name: "John", Email: "john@example.com"},
+			mockReturn:     &domain.User{Name: "John", Email: "john@example.com"},
 			mockError:      nil,
 			expectedStatus: http.StatusCreated,
 		},
@@ -92,24 +92,20 @@ func TestCreateUser(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// echo context 생성
 			e := echo.New()
 			req := httptest.NewRequest(http.MethodPost, "/users", strings.NewReader(tt.input))
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 			rec := httptest.NewRecorder()
 			c := e.NewContext(req, rec)
 
-			// mock 생성, 설정및 핸들러 생성
 			mockUseCase := new(mocks.UserUseCase)
 			mockUseCase.On("CreateUser", tt.mockInput).Return(tt.mockReturn, tt.mockError).Maybe()
 			handler := NewUserHandler(mockUseCase)
 
-			// 핸들러 실행 및 검증
 			err := handler.CreateUser(c)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.expectedStatus, rec.Code)
 
-			// mock 호출 검증
 			mockUseCase.AssertExpectations(t)
 		})
 	}
@@ -153,7 +149,6 @@ func TestGetByID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			// echo context 생성
 			e := echo.New()
 			req := httptest.NewRequest(http.MethodGet, "/users/"+tt.pathParam, nil)
 			rec := httptest.NewRecorder()
@@ -161,18 +156,15 @@ func TestGetByID(t *testing.T) {
 			c.SetParamNames("id")
 			c.SetParamValues(tt.pathParam)
 
-			// mcok 생성, 설정 및 핸들러 생성
 			mockUseCase := new(mocks.UserUseCase)
 			mockUseCase.On("GetByID", mock.Anything).Return(tt.mockReturn, tt.mockError).Maybe()
 			handler := NewUserHandler(mockUseCase)
 
-			// 핸들러 실행 및 검증
 			err := handler.GetByID(c)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.expectedStatus, rec.Code)
 			assert.JSONEq(t, tt.expectedBody, rec.Body.String())
 
-			// mock 호출 검증
 			mockUseCase.AssertExpectations(t)
 		})
 	}
@@ -208,25 +200,20 @@ func TestGetAll(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// echo context 생성
 			e := echo.New()
 			req := httptest.NewRequest(http.MethodGet, "/users", nil)
 			rec := httptest.NewRecorder()
 			c := e.NewContext(req, rec)
 
-			// mock 생성, 설정 및 핸들러 생성
 			mockUseCase := new(mocks.UserUseCase)
 			mockUseCase.On("GetAll").Return(tt.mockReturn, tt.mockError)
 			handler := NewUserHandler(mockUseCase)
 
-			// 핸들러 실행 및 검증
 			err := handler.GetAll(c)
 			assert.NoError(t, err)
-
 			assert.Equal(t, tt.expectedStatus, rec.Code)
 			assert.JSONEq(t, tt.expectedBody, rec.Body.String())
 
-			// mock 호출 검증
 			mockUseCase.AssertExpectations(t)
 		})
 	}
