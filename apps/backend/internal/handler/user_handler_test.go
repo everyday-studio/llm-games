@@ -100,7 +100,7 @@ func TestCreateUser(t *testing.T) {
 
 			mockUseCase := new(mocks.UserUseCase)
 			mockUseCase.On("CreateUser", tt.mockInput).Return(tt.mockReturn, tt.mockError).Maybe()
-			handler := NewUserHandler(mockUseCase)
+			handler := NewUserHandler(e, mockUseCase)
 
 			err := handler.CreateUser(c)
 			assert.NoError(t, err)
@@ -158,7 +158,7 @@ func TestGetByID(t *testing.T) {
 
 			mockUseCase := new(mocks.UserUseCase)
 			mockUseCase.On("GetByID", mock.Anything).Return(tt.mockReturn, tt.mockError).Maybe()
-			handler := NewUserHandler(mockUseCase)
+			handler := NewUserHandler(e, mockUseCase)
 
 			err := handler.GetByID(c)
 			assert.NoError(t, err)
@@ -207,7 +207,7 @@ func TestGetAll(t *testing.T) {
 
 			mockUseCase := new(mocks.UserUseCase)
 			mockUseCase.On("GetAll").Return(tt.mockReturn, tt.mockError)
-			handler := NewUserHandler(mockUseCase)
+			handler := NewUserHandler(e, mockUseCase)
 
 			err := handler.GetAll(c)
 			assert.NoError(t, err)

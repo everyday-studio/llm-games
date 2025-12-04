@@ -25,14 +25,13 @@ func main() {
 			echo.New,
 		),
 		fx.Provide(
-			handler.NewUserHandler,
-			//handler.NewGameHandler,
-		),
-		fx.Provide(
 			usecase.NewUserUseCase,
 		),
 		fx.Provide(
 			repository.NewUserRepository,
+		),
+		fx.Invoke(
+			handler.NewUserHandler,
 		),
 		fx.Invoke(StartServer),
 	)
@@ -60,6 +59,7 @@ func NewConfig() *config.Config {
 
 func NewDB(lc fx.Lifecycle, cfg *config.Config) *sql.DB {
 	dbConn, err := db.NewDBConnection(cfg)
+
 	if err != nil {
 		log.Fatalf("DB connection error: %v", err)
 	}
