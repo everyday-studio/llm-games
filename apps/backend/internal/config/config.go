@@ -2,6 +2,8 @@ package config
 
 import (
 	"fmt"
+	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/joho/godotenv"
@@ -29,13 +31,22 @@ type DBConfig struct {
 }
 
 func LoadConfig(env string) (*Config, error) {
-	if err := godotenv.Load(".env"); err != nil {
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return nil, fmt.Errorf("failed to get current file path")
+	}
+
+	currentDir := filepath.Dir(filename)
+	projectRoot := filepath.Join(currentDir, "../..")
+	configPath := filepath.Join(projectRoot, "config")
+	envPath := filepath.Join(projectRoot, ".env")
+
+	if err := godotenv.Load(envPath); err != nil {
 		return nil, fmt.Errorf("failed to read env file: %w", err)
 	}
 
 	viper.SetConfigName(fmt.Sprintf("config.%s", env))
-	viper.AddConfigPath("./config")
-	viper.AddConfigPath("../../config")
+	viper.AddConfigPath(configPath)
 	viper.SetConfigType("yaml")
 
 	if err := viper.ReadInConfig(); err != nil {
