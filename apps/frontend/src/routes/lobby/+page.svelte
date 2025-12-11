@@ -1,10 +1,11 @@
 <script lang="ts">
-  import { fade, fly } from 'svelte/transition';
+  import { fade } from 'svelte/transition';
+  import { onMount, tick } from 'svelte';
 
-  // 테마 컬러 (로고에서 추출한 주황색)
+  // 테마 컬러
   const themeColor = "#FF4D00";
 
-  // 게임 데이터
+  // 게임 데이터 (그대로 유지)
   const games = [
     {
       id: 1,
@@ -48,41 +49,42 @@
     }
   ];
 
-  // 현재 선택된 게임 (기본값: 첫 번째)
+  // 현재 선택된 게임
   let selectedGame = games[0];
 
-  function selectGame(game: typeof games[0]) {
+  // 이미지 로딩 상태 관리
+  let isImageLoaded = false;
+  let imgEl: HTMLImageElement | null = null;
+
+  // [핵심 수정 1] 앱이 처음 켜질 때(새로고침 포함) 이미지가 로드되었는지 확인
+  onMount(async () => {
+    await tick(); // DOM 렌더링 대기
+    if (imgEl?.complete) {
+      isImageLoaded = true;
+    }
+  });
+
+  async function selectGame(game: typeof games[0]) {
+    // 게임 변경 시 일단 안 보임 처리
+    isImageLoaded = false; 
     selectedGame = game;
+    
+    // DOM 업데이트 대기
+    await tick();
+    
+    // 이미지가 캐시되어 있어 순식간에 로딩된 경우를 대비
+    if (imgEl?.complete) {
+        isImageLoaded = true;
+    }
   }
 </script>
 
 <div class="min-h-screen bg-gray-50 text-[#333] font-sans">
-
-  <header class="bg-white border-b border-gray-200 py-6"> <div class="max-w-6xl mx-auto px-6 flex items-center justify-between">
-      <div class="flex items-center gap-3 cursor-pointer" on:click={() => location.reload()}>
-        <img 
-          src="/logo.png" 
-          alt="Ollm Logo" 
-          class="h-14 w-auto object-contain hover:opacity-90 transition"
-        /> 
-        </div>
-
-      <div class="flex items-center gap-3">
-        <span class="text-sm font-bold text-gray-500">Player1</span>
-        <div class="w-10 h-10 rounded-full bg-gray-200 border border-gray-300 overflow-hidden">
-           <svg class="w-full h-full text-gray-400 p-1" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-        </div>
-      </div>
-    </div>
-  </header>
-
   <main class="max-w-6xl mx-auto px-6 py-12">
-    
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 h-[600px]">
       
       <aside class="lg:col-span-4 flex flex-col gap-3 h-full overflow-y-auto pr-2 custom-scrollbar">
         <h2 class="text-xl font-extrabold text-gray-800 mb-4 px-2">SCENARIOS</h2>
-        
         {#each games as game}
           <button 
             on:click={() => selectGame(game)}
@@ -94,7 +96,6 @@
             {#if selectedGame.id === game.id}
               <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-[#FF4D00]" transition:fade></div>
             {/if}
-
             <div class="pl-2">
               <div class="text-xs font-bold uppercase tracking-wider mb-1"
                 class:text-[#FF4D00]={selectedGame.id === game.id}
@@ -117,13 +118,22 @@
             class="flex flex-col h-full"
             in:fade={{ duration: 300 }}
           >
-            <div class="relative h-[60%] w-full bg-gray-900 group">
+            <div class="relative h-[60%] w-full bg-gray-200 group overflow-hidden">
+              
+              <div class="absolute inset-0 flex items-center justify-center text-gray-400">
+                Loading...
+              </div>
+
               <img 
+                bind:this={imgEl} 
                 src={selectedGame.image} 
                 alt={selectedGame.title} 
-                class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition duration-700"
+                class="absolute inset-0 w-full h-full object-cover transition-opacity duration-700
+                       {isImageLoaded ? 'opacity-100' : 'opacity-0'}"
+                on:load={() => isImageLoaded = true}
               />
-              <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+              
+              <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none"></div>
               
               <div class="absolute bottom-6 left-8 text-white">
                 <div class="flex gap-2 mb-2">
@@ -152,9 +162,9 @@
               <div class="flex items-center justify-end mt-4 pt-4 border-t border-gray-100">
                 <button 
                   class="pl-6 pr-8 py-3 rounded-full font-black text-xl border-2 transition-all duration-300 flex items-center gap-2 active:scale-95
-                        bg-transparent text-[var(--theme-color)] border-transparent
-                        hover:bg-[var(--theme-color)] hover:text-white hover:border-transparent hover:shadow-md
-                        focus:outline-none" 
+                         bg-transparent text-[var(--theme-color)] border-transparent
+                         hover:bg-[var(--theme-color)] hover:text-white hover:border-transparent hover:shadow-md
+                         focus:outline-none" 
                   style="--theme-color: {themeColor};"
                 >
                   <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
@@ -166,7 +176,6 @@
             </div>
           </div>
         {/key}
-
       </section>
 
     </div>
@@ -174,7 +183,6 @@
 </div>
 
 <style>
-  /* 커스텀 스크롤바 (Webkit) */
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
   }
