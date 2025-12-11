@@ -16,9 +16,10 @@ type Config struct {
 }
 
 type AppConfig struct {
-	Env   string `yaml:"env"`
-	Port  int    `yaml:"port"`
-	Debug bool   `yaml:"debug"`
+	Env      string `yaml:"env"`
+	Port     int    `yaml:"port"`
+	Debug    bool   `yaml:"debug"`
+	LogLevel string `yaml:"log_level"`
 }
 
 type DBConfig struct {
