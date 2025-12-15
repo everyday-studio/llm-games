@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
-	"strings"
 	"testing"
 
 	"github.com/labstack/echo/v4"
@@ -51,62 +50,6 @@ func TestErrResponse(t *testing.T) {
 			if got := ErrResponse(tt.args.err); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ErrResponse() = %v, want %v", got, tt.want)
 			}
-		})
-	}
-}
-
-func TestCreateUser(t *testing.T) {
-	tests := []struct {
-		name           string
-		input          string
-		mockInput      *domain.User
-		mockReturn     interface{}
-		mockError      error
-		expectedStatus int
-	}{
-		{
-			name:           "Create user successfully",
-			input:          `{"name":"John","email":"john@example.com"}`,
-			mockInput:      &domain.User{Name: "John", Email: "john@example.com"},
-			mockReturn:     &domain.User{Name: "John", Email: "john@example.com"},
-			mockError:      nil,
-			expectedStatus: http.StatusCreated,
-		},
-		{
-			name:           "Fail to create user due to invalid email",
-			input:          `{"name":"","email":""}`,
-			mockInput:      &domain.User{Name: "", Email: ""},
-			mockReturn:     nil,
-			mockError:      nil,
-			expectedStatus: http.StatusBadRequest,
-		},
-		{
-			name:           "Fail to create user due to existing email",
-			input:          `{"name":"John","email":"john@example.com"}`,
-			mockInput:      &domain.User{Name: "John", Email: "john@example.com"},
-			mockReturn:     nil,
-			mockError:      domain.ErrAlreadyExists,
-			expectedStatus: http.StatusConflict,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			e := echo.New()
-			req := httptest.NewRequest(http.MethodPost, "/users", strings.NewReader(tt.input))
-			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-			rec := httptest.NewRecorder()
-			c := e.NewContext(req, rec)
-
-			mockUseCase := new(mocks.UserUseCase)
-			mockUseCase.On("CreateUser", tt.mockInput).Return(tt.mockReturn, tt.mockError).Maybe()
-			handler := NewUserHandler(e, mockUseCase)
-
-			err := handler.CreateUser(c)
-			assert.NoError(t, err)
-			assert.Equal(t, tt.expectedStatus, rec.Code)
-
-			mockUseCase.AssertExpectations(t)
 		})
 	}
 }

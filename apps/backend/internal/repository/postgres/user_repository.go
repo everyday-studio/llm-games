@@ -21,15 +21,19 @@ func NewUserRepository(db *sql.DB) domain.UserRepository {
 	}
 }
 
-func (r *userRepository) Save(user *domain.User) (*domain.User, error) {
+func (r *userRepository) Save(ctx context.Context, user *domain.User) (*domain.User, error) {
+	//Add User Role if no default role
+	if user.Role == "" {
+		user.Role = domain.RoleUser
+	}
+
 	const query = `
-		INSERT INTO users (name, email)
-		VALUES ($1, $2)
+		INSERT INTO users (name, email, password, role)
+		VALUES ($1, $2, $3, $4)
 		RETURNING id
 	`
 
-	if err := r.db.QueryRow(query, user.Name, user.Email).Scan(&user.ID); err != nil {
-		// unique_violation 23505
+	if err := r.db.QueryRowContext(ctx, query, user.Name, user.Email, user.Password, user.Role).Scan(&user.ID); err != nil {
 		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
 			return nil, fmt.Errorf("email %s: %w", user.Email, domain.ErrAlreadyExists)
 		}
@@ -39,7 +43,7 @@ func (r *userRepository) Save(user *domain.User) (*domain.User, error) {
 	return user, nil
 }
 
-func (r *userRepository) GetByID(id int64) (*domain.User, error) {
+func (r *userRepository) GetByID(ctx context.Context, id int64) (*domain.User, error) {
 	query := `
 		SELECT id, name, email
 		FROM users
@@ -58,7 +62,7 @@ func (r *userRepository) GetByID(id int64) (*domain.User, error) {
 	return &user, nil
 }
 
-func (r *userRepository) GetAll() ([]domain.User, error) {
+func (r *userRepository) GetAll(ctx context.Context) ([]domain.User, error) {
 	query := `
 		SELECT id, name, email
 		FROM users
