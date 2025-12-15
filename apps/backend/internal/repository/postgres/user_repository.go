@@ -90,8 +90,3 @@ func (r *userRepository) GetAll(ctx context.Context) ([]domain.User, error) {
 
 	return users, nil
 }
-
-func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (*domain.User, error) {
-	user := &domain.User{}
-	return user, nil
-}
