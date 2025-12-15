@@ -18,7 +18,6 @@ func NewUserHandler(e *echo.Echo, userUseCase domain.UserUseCase) *UserHandler {
 	handler := &UserHandler{userUseCase: userUseCase}
 
 	group := e.Group("/users")
-	group.POST("", handler.CreateUser)
 	group.GET("", handler.GetAll)
 	group.GET("/:id", handler.GetByID)
 
@@ -37,38 +36,14 @@ func ErrResponse(err error) map[string]string {
 	}
 }
 
-func (h *UserHandler) CreateUser(c echo.Context) error {
-	user := new(domain.User)
-	if err := c.Bind(&user); err != nil {
-		return c.JSON(http.StatusBadRequest, ErrResponse(domain.ErrInvalidInput))
-	}
-
-	if user.Name == "" || user.Email == "" {
-		return c.JSON(http.StatusBadRequest, ErrResponse(domain.ErrInvalidInput))
-	}
-
-	_, err := h.userUseCase.CreateUser(user)
-	if err == nil {
-		return c.JSON(http.StatusCreated, user)
-	}
-
-	switch {
-	case errors.Is(err, domain.ErrInvalidInput):
-		return c.JSON(http.StatusBadRequest, ErrResponse(err))
-	case errors.Is(err, domain.ErrAlreadyExists):
-		return c.JSON(http.StatusConflict, ErrResponse(err))
-	default:
-		return c.JSON(http.StatusInternalServerError, ErrResponse(domain.ErrInternal))
-	}
-}
-
 func (h *UserHandler) GetByID(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, ErrResponse(domain.ErrInvalidInput))
 	}
 
-	user, err := h.userUseCase.GetByID(int64(id))
+	ctx := c.Request().Context()
+	user, err := h.userUseCase.GetByID(ctx, int64(id))
 	if err == nil {
 		return c.JSON(http.StatusOK, user)
 	}
@@ -81,8 +56,8 @@ func (h *UserHandler) GetByID(c echo.Context) error {
 }
 
 func (h *UserHandler) GetAll(c echo.Context) error {
-
-	users, err := h.userUseCase.GetAll()
+	ctx := c.Request().Context()
+	users, err := h.userUseCase.GetAll(ctx)
 	if err == nil {
 		return c.JSON(http.StatusOK, users)
 	}

@@ -1,19 +1,31 @@
 package domain
 
+import "context"
+
+type Role string
+
+const (
+	RolePublic  Role = "Public" // public access, token unnecessary
+	RoleAdmin   Role = "Admin"
+	RoleManager Role = "Manager"
+	RoleUser    Role = "User"
+)
+
 type User struct {
-	ID    int64  `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	ID       int64  `json:"id"`
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"-"`
+	Role     Role   `json:"role"`
 }
 
 type UserRepository interface {
-	Save(user *User) (*User, error)
-	GetByID(id int64) (*User, error)
-	GetAll() ([]User, error)
+	Save(ctx context.Context, user *User) (*User, error)
+	GetByID(ctx context.Context, id int64) (*User, error)
+	GetAll(ctx context.Context) ([]User, error)
 }
 
 type UserUseCase interface {
-	CreateUser(user *User) (*User, error)
-	GetByID(id int64) (*User, error)
-	GetAll() ([]User, error)
+	GetByID(ctx context.Context, id int64) (*User, error)
+	GetAll(ctx context.Context) ([]User, error)
 }
