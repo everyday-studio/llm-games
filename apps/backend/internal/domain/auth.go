@@ -1,6 +1,9 @@
 package domain
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 type SignUpRequest struct {
 	Email    string `json:"email"`
@@ -23,4 +26,15 @@ type LoginResponse struct {
 	AccessToken            string    `json:"access_token"`
 	RefreshToken           string    `json:"-"` // Not included in JSON response
 	RefreshTokenExpiration time.Time `json:"-"` // Not included in JSON response
+}
+
+type AuthRepository interface {
+	CreateUser(ctx context.Context, user *User) (*User, error)
+}
+
+type AuthUsecase interface {
+	SignUpUser(ctx context.Context, user *User) (*User, error)
+	Login(ctx context.Context, email string, password string) (*LoginResponse, error)
+	Logout(ctx context.Context, userID int64) error
+	RefreshToken(ctx context.Context, refreshToken string) (*LoginResponse, error)
 }
