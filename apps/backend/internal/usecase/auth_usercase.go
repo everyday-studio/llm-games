@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rsa"
 	"errors"
+	"time"
 
 	"github.com/everyday-studio/ollm/internal/config"
 	"github.com/everyday-studio/ollm/internal/domain"
@@ -74,6 +75,36 @@ func (uc *authUseCase) RefreshToken(ctx context.Context, refreshToken string) (*
 }
 
 func (uc *authUseCase) generateTokens(user *domain.User) (*domain.LoginResponse, error) {
-	response := &domain.LoginResponse{}
+	accessTokenExpiration := time.Duration(uc.config.Secure.JWT.AccessExpirationMin) * time.Minute
+	accessToken, err := security.GenerateAccessToken(
+		user.ID,
+		user.Email,
+		string(user.Role),
+		uc.privateKey,
+		accessTokenExpiration,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	refreshTokenExpiration := time.Duration(uc.config.Secure.JWT.RefreshExpirationDay) * 24 * time.Hour
+	refreshToken, err := security.GenerateRefreshToken(
+		user.ID,
+		user.Email,
+		string(user.Role),
+		uc.privateKey,
+		refreshTokenExpiration,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	response := &domain.LoginResponse{
+		ID:                     user.ID,
+		Email:                  user.Email,
+		AccessToken:            accessToken,
+		RefreshToken:           refreshToken,
+		RefreshTokenExpiration: time.Now().Add(refreshTokenExpiration),
+	}
 	return response, nil
 }

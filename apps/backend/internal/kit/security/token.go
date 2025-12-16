@@ -4,6 +4,7 @@ import (
 	"crypto/rsa"
 	"encoding/base64"
 	"errors"
+	"time"
 
 	"github.com/golang-jwt/jwt/v4"
 )
@@ -17,14 +18,14 @@ var (
 type TokenType string
 
 const (
-	AccessToken TokenType = "access"
-	RefresToken TokenType = "refresh"
+	AccessToken  TokenType = "access"
+	RefreshToken TokenType = "refresh"
 )
 
 type JWTClaims struct {
 	UserID int64     `json:"user_id"`
 	Email  string    `json:"email"`
-	Roles  []string  `json:"roles"`
+	Role   string    `json:"role"`
 	Type   TokenType `json:"type"`
 	jwt.RegisteredClaims
 }
@@ -53,4 +54,33 @@ func ParseRSAPublicKeyFromBase64(base64Key string) (*rsa.PublicKey, error) {
 		return nil, ErrParsingKey
 	}
 	return publicKey, nil
+}
+
+func GenerateToken(userID int64, email string, role string, privateKey *rsa.PrivateKey, expiratinTime time.Duration, tokenType TokenType) (string, error) {
+	claims := &JWTClaims{
+		UserID: userID,
+		Email:  email,
+		Role:   role,
+		Type:   tokenType,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiratinTime)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	tokenString, err := token.SignedString(privateKey)
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
+}
+
+func GenerateAccessToken(userID int64, email string, role string, privateKey *rsa.PrivateKey, expirationTime time.Duration) (string, error) {
+	return GenerateToken(userID, email, role, privateKey, expirationTime, AccessToken)
+}
+
+func GenerateRefreshToken(userID int64, email string, role string, privateKey *rsa.PrivateKey, expirationTime time.Duration) (string, error) {
+	return GenerateToken(userID, email, role, privateKey, expirationTime, RefreshToken)
 }
