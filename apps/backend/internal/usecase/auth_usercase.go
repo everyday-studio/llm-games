@@ -79,7 +79,7 @@ func (uc *authUseCase) generateTokens(user *domain.User) (*domain.LoginResponse,
 	accessToken, err := security.GenerateAccessToken(
 		user.ID,
 		user.Email,
-		string(user.Role),
+		user.Role,
 		uc.privateKey,
 		accessTokenExpiration,
 	)
@@ -91,7 +91,7 @@ func (uc *authUseCase) generateTokens(user *domain.User) (*domain.LoginResponse,
 	refreshToken, err := security.GenerateRefreshToken(
 		user.ID,
 		user.Email,
-		string(user.Role),
+		user.Role,
 		uc.privateKey,
 		refreshTokenExpiration,
 	)

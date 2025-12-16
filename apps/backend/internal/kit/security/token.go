@@ -6,6 +6,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/everyday-studio/ollm/internal/domain"
 	"github.com/golang-jwt/jwt/v4"
 )
 
@@ -56,11 +57,11 @@ func ParseRSAPublicKeyFromBase64(base64Key string) (*rsa.PublicKey, error) {
 	return publicKey, nil
 }
 
-func GenerateToken(userID int64, email string, role string, privateKey *rsa.PrivateKey, expiratinTime time.Duration, tokenType TokenType) (string, error) {
+func GenerateToken(userID int64, email string, role domain.Role, privateKey *rsa.PrivateKey, expiratinTime time.Duration, tokenType TokenType) (string, error) {
 	claims := &JWTClaims{
 		UserID: userID,
 		Email:  email,
-		Role:   role,
+		Role:   string(role),
 		Type:   tokenType,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiratinTime)),
@@ -77,10 +78,10 @@ func GenerateToken(userID int64, email string, role string, privateKey *rsa.Priv
 	return tokenString, nil
 }
 
-func GenerateAccessToken(userID int64, email string, role string, privateKey *rsa.PrivateKey, expirationTime time.Duration) (string, error) {
+func GenerateAccessToken(userID int64, email string, role domain.Role, privateKey *rsa.PrivateKey, expirationTime time.Duration) (string, error) {
 	return GenerateToken(userID, email, role, privateKey, expirationTime, AccessToken)
 }
 
-func GenerateRefreshToken(userID int64, email string, role string, privateKey *rsa.PrivateKey, expirationTime time.Duration) (string, error) {
+func GenerateRefreshToken(userID int64, email string, role domain.Role, privateKey *rsa.PrivateKey, expirationTime time.Duration) (string, error) {
 	return GenerateToken(userID, email, role, privateKey, expirationTime, RefreshToken)
 }
