@@ -6,7 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
-	"github.com/everyday-studio/ollm/internal/kit/ctx"
+	"github.com/everyday-studio/ollm/internal/kit/contexts"
 )
 
 func LoggerMiddleware(logger *slog.Logger) echo.MiddlewareFunc {
@@ -14,9 +14,9 @@ func LoggerMiddleware(logger *slog.Logger) echo.MiddlewareFunc {
 
 		BeforeNextFunc: func(c echo.Context) {
 			req := c.Request()
-			requestID := ctx.GetRequestID(c.Request().Context())
+			requestID := contexts.GetRequestID(c.Request().Context())
 			ctxLogger := logger.With(slog.String("request_id", requestID))
-			reqCtx := ctx.WithLogger(req.Context(), ctxLogger)
+			reqCtx := contexts.WithLogger(req.Context(), ctxLogger)
 			c.SetRequest(req.WithContext(reqCtx))
 		},
 

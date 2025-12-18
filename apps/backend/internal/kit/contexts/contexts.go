@@ -1,4 +1,4 @@
-package ctx
+package contexts
 
 import (
 	"context"
@@ -36,4 +36,8 @@ func GetRequestID(ctx context.Context) string {
 		return requestID
 	}
 	return "no-request-id-in-context"
+}
+
+func TokenToUser(c echo.Context) (id int64, a string, b string, e error) {
+	return 1, "1", "2", nil
 }
