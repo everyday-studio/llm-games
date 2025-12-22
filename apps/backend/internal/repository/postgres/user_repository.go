@@ -93,7 +93,7 @@ func (r *userRepository) GetAll(ctx context.Context) ([]domain.User, error) {
 
 func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (*domain.User, error) {
 	const query = `
-		SELECT id, name, email, password, roles
+		SELECT id, name, email, password, role
 		FROM users
 		WHERE email = $1
 	`
