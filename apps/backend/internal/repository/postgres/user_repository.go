@@ -64,7 +64,7 @@ func (r *userRepository) GetByID(ctx context.Context, id int64) (*domain.User, e
 
 func (r *userRepository) GetAll(ctx context.Context) ([]domain.User, error) {
 	query := `
-		SELECT id, name, email
+		SELECT id, name, email, role
 		FROM users
 		ORDER BY id ASC
 	`
@@ -78,7 +78,7 @@ func (r *userRepository) GetAll(ctx context.Context) ([]domain.User, error) {
 	var users []domain.User
 	for rows.Next() {
 		var user domain.User
-		if err := rows.Scan(&user.ID, &user.Name, &user.Email); err != nil {
+		if err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.Role); err != nil {
 			return nil, fmt.Errorf("failed to scan user: %w", err)
 		}
 		users = append(users, user)
